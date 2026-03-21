@@ -449,12 +449,12 @@ class CoTController:
                 try:
                     with self.context:
                         from_eud = self.db.session.execute(
-                            self.db.session.query(EUD).filter_by(uid=geochat.sender_uid)
+                            self.db.session.query(EUD).filter_by(uid=chat_group.attrs["uid0"])
                         ).first()[0]
 
                         tak_packet = atak_pb2.TAKPacket()
                         tak_packet.contact.device_callsign, size = unishox2.compress(
-                            geochat.sender_uid
+                            chat_group.attrs["uid0"]
                         )
                         tak_packet.contact.callsign, size = unishox2.compress(from_eud.callsign)
                         tak_packet.chat.message, size = unishox2.compress(remarks.text)
@@ -690,7 +690,7 @@ class CoTController:
     def parse_marker(self, event, uid, point_pk, cot_pk):
         if (
             (
-                re.match("^a-[f|h|u|p|a|n|s|j|k]-[Z|P|A|G|S|U|F]", event.attrs["type"])
+                re.match("^a-[fhupansjk]-[ZPAGSUF]", event.attrs["type"])
                 or
                 # Spot map
                 re.match("^b-m-p", event.attrs["type"])
@@ -1013,7 +1013,7 @@ def setup_logging(app):
 
     os.makedirs(os.path.join(app.config.get("OTS_DATA_FOLDER"), "logs"), exist_ok=True)
     fh = TimedRotatingFileHandler(
-        os.path.join(app.config.get("OTS_DATA_FOLDER"), "logs", "opentakserver.log"),
+        os.path.join(app.config.get("OTS_DATA_FOLDER"), "logs", "cot_parser.log"),
         when=app.config.get("OTS_LOG_ROTATE_WHEN"),
         interval=app.config.get("OTS_LOG_ROTATE_INTERVAL"),
         backupCount=app.config.get("OTS_BACKUP_COUNT"),
